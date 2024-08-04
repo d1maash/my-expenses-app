@@ -7,17 +7,51 @@
 
 import SwiftUI
 
+
+struct ExpenseItem: Identifiable {
+    let id = UUID()
+    let name: String
+    let type: String
+    let amount: Int
+}
+
+
+class Expenses: ObservableObject {
+    @Published var items = [ExpenseItem]()
+}
+
+
 struct ContentView: View {
+    @State private var showingAddExpence = false
+    @ObservedObject var expenses = Expenses()
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationView {
+            List {
+                ForEach(expenses.items) {
+                    item in Text(item.name)
+                }
+                .onDelete(perform: removeItems)
+            }
+            .navigationBarTitle("My expenses")
+                .navigationBarItems(trailing:
+                                        Button(action:
+                                                {
+                    self.showingAddExpence = true
+                }) {
+                    Image(systemName: "plus")
+                }
+                ).sheet(isPresented: $showingAddExpence, content: {
+                    AddView(expenses: self.expenses)
+                })
         }
-        .padding()
+      
+    }
+    func removeItems(as offsets: IndexSet) {
+        expenses.items.remove(atOffsets: offsets )
     }
 }
+
 
 #Preview {
     ContentView()
